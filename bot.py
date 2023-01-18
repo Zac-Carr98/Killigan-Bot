@@ -41,32 +41,16 @@ class MyView(discord.ui.View):
 
     @discord.ui.button(label="Yes", style=discord.ButtonStyle.primary)
     async def button_callback(self, interaction: discord.Interaction, button: discord.ui.Button):
-        # await interaction.response.send_message("You clicked the button!", ephemeral=True)
 
         modal = Scheduler()
         await interaction.response.send_modal(modal)
         await modal.wait()
 
-    @discord.ui.button(label='Cancel', style=discord.ButtonStyle.gray)
+    @discord.ui.button(label='No', style=discord.ButtonStyle.gray)
     async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message('Cancelling', ephemeral=True)
+        await interaction.response.send_message('No problemo, I won\'t schedule anything.', ephemeral=True)
         self.stop()
 
-
-# class TextInput(discord.ui.TextInput):
-#     def __init__(self, label):
-#         super().__init__(label=label, type=)
-#
-#     async def button_callback(self, interaction: discord.Interaction):
-#         await interaction.response.send_message("You clicked the button!", ephemeral=True)
-
-
-# class TextView(discord.ui.View):
-#     def __init__(self, *, timeout=180):
-#         super().__init__(timeout=timeout)
-#         self.value = None
-#
-#         self.add_item(discord.ui.TextInput(label="my textbox"))
 
 class NameInput(discord.ui.TextInput):
     def __init__(self, *, label='Session Name'):
@@ -97,57 +81,36 @@ class StartTimeInput(discord.ui.TextInput):
         self.custom_id = 'Start_Time_Input'
 
 
-class EndTimeInput(discord.ui.TextInput):
-    def __init__(self, *, label='End Time'):
-        super().__init__(label=label)
-        self.placeholder = '12:00 PM'
-        self.required = True
-        self.min_length = 4
-        self.max_length = 5
-        self.custom_id = 'End_Time_Input'
-
-
 class Scheduler(discord.ui.Modal, title='Session Scheduler'):
     name = NameInput()
     date = DateInput()
     start_time = StartTimeInput()
-    end_time = EndTimeInput()
 
     async def on_submit(self, interaction: discord.Interaction):
         text_fields = interaction.data['components']
 
         name = text_fields[0]['components'][0]['value']
-        startDateTime = parse_date_time(text_fields[1]['components'][0]['value'],
-                                        text_fields[2]['components'][0]['value'],
-                                        interaction.created_at)
-        endDateTime = parse_date_time(text_fields[1]['components'][0]['value'],
-                                      text_fields[3]['components'][0]['value'],
-                                      interaction.created_at)
+        inputStartTime = text_fields[1]['components'][0]['value'] + " " + text_fields[2]['components'][0]['value']
 
-        # startDateTime = parse_date_time("08/05/2023", '12:00 pm', discord.utils.utcnow())
-        # endDateTime = parse_date_time("08/05/2023", '01:00 pm', discord.utils.utcnow())
+        startDateTime = parse_date_time(inputStartTime)
 
+        # TODO add voice channel verification
         vchannel = None
         for channel in interaction.guild.voice_channels:
             if channel.name == "General":
                 vchannel = channel
 
-        # TODO add voice channel verification
         try:
             await discord.guild.Guild.create_scheduled_event(interaction.guild,
                                                              name=name,
                                                              start_time=startDateTime,
-                                                             end_time=endDateTime,
                                                              channel=vchannel)
 
             await interaction.response.send_message("Sick nasty brah, I'll get that hammered away for you.",
                                                     ephemeral=True)
         except discord.Forbidden:
-            await interaction.response.send_message("I dont have permission to do that")
-
-        # except:
-        #     await interaction.response.send_message(
-        #         "Just hit something gnarly brah, gonna have to give that another go")
+            await interaction.response.send_message("Sorry broham, the head honcho said I'm not \"responsible\" "
+                                                    "enough to do that")
 
 
 @client.event
@@ -183,34 +146,12 @@ async def on_message(message):
             response = help_response(author_name)
             await message.channel.send(response)
         elif 'schedule' in lower_message:
+
+            view = MyView()
             try:
-                MyView()
+                await message.channel.send("Did you wanna schedule a new session?", view=view)
             except asyncio.TimeoutError:
                 return await message.channel.send(f'Sorry chief, can\'t hang around all day')
-
-        # response = "Sure broham, what day were you thinking? (Remember, I only need dd/mm/yy"
-        # await message.channel.send(response)
-        #
-        # try:
-        #     reply = await client.wait_for('message', timeout=5.0)
-        #     await message.channel.send(f'{reply.content} Is this the right date?')
-        #
-        #     try:
-        #         reply2 = await client.wait_for('message, timeout=5.0')
-        #         await message.channel.send(f'{reply2.content} is this the right time?')
-        #
-        #         try:
-        #             await message.channel.send("Sick nasty brah, I'll get that hammered away for you.")
-        #             message.guild.q()
-        #
-        #         except asyncio.TimeoutError:
-        #             return await message.channel.send(f'Sorry chief, can\'t hang around all day')
-        #
-        #     except asyncio.TimeoutError:
-        #         return await message.channel.send(f'Sorry chief, can\'t hang around all day')
-        #
-        # except asyncio.TimeoutError:
-        #     return await message.channel.send(f'Sorry chief, can\'t hang around all day')
         else:
             response = bad_command_response(author_name)
             await message.channel.send(response)

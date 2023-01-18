@@ -1,19 +1,20 @@
 import datetime
 import random
+import zoneinfo
+from zoneinfo import ZoneInfo
+import discord
 import re
 
 
-def parse_date_time(date, time, now):
-    format_date = "%m/%d/%Y"
-    format_time = "%H:%M"
+def parse_date_time(start_time):
+    format_datetime = "%m/%d/%Y %H:%M"
+    inputDateTime = datetime.datetime.strptime(start_time, format_datetime)
 
-    date_formatted = datetime.datetime.strptime(date, format_date).date()
-    time_formatted = datetime.datetime.strptime(time, format_time).time()
+    tz = datetime.datetime.now().astimezone().tzinfo
 
-    tz = now.tzinfo
-
-    return datetime.datetime(year=date_formatted.year, month=date_formatted.month, day=date_formatted.day,
-                             hour=time_formatted.hour, minute=time_formatted.minute, tzinfo=tz)
+    a = datetime.datetime(year=inputDateTime.year, month=inputDateTime.month, day=inputDateTime.day,
+                          hour=inputDateTime.hour, minute=inputDateTime.minute, tzinfo=tz)
+    return a
 
 
 def test(date):
