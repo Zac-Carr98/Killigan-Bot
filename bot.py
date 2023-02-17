@@ -4,8 +4,10 @@ import datetime
 import os
 
 from discord.ext.commands import Bot
+from discord.utils import get
 
 from bot_helper import *
+from discord_ui_extensions import *
 
 from discord.ext import commands
 import discord
@@ -15,102 +17,13 @@ from asyncio import TimeoutError
 
 intents = discord.Intents.default()
 intents.message_content = True
+intents.members = True
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
 client = discord.Client(intents=intents)
 bot = Bot(intents=intents, Client=client, command_prefix=commands.when_mentioned_or("/"))
-
-
-# class Bot(commands.Bot):
-#     def __init__(self):
-#         intents = discord.Intents.default()
-#         intents.message_content = True
-#
-#         super().__init__(command_prefix=commands.when_mentioned_or('$'), intents=intents)
-#
-#     async def on_ready(self):
-#         print(f'Logged in as {self.user} (ID: {self.user.id})')
-#         print('------')
-
-
-class MyView(discord.ui.View):
-    def __init__(self, *, timeout=180):
-        super().__init__(timeout=timeout)
-
-    @discord.ui.button(label="Yes", style=discord.ButtonStyle.primary)
-    async def button_callback(self, interaction: discord.Interaction, button: discord.ui.Button):
-
-        modal = Scheduler()
-        await interaction.response.send_modal(modal)
-        await modal.wait()
-
-    @discord.ui.button(label='No', style=discord.ButtonStyle.gray)
-    async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message('No problemo, I won\'t schedule anything.', ephemeral=True)
-        self.stop()
-
-
-class NameInput(discord.ui.TextInput):
-    def __init__(self, *, label='Session Name'):
-        super().__init__(label=label)
-        self.placeholder = 'New Session'
-        self.default = 'New Session'
-        self.required = True
-        self.custom_id = 'Name_Input'
-
-
-class DateInput(discord.ui.TextInput):
-    def __init__(self, *, label='Date'):
-        super().__init__(label=label)
-        self.placeholder = 'MM/DD/YYYY'
-        self.required = True
-        self.min_length = 10
-        self.max_length = 10
-        self.custom_id = 'Date_Input'
-
-
-class StartTimeInput(discord.ui.TextInput):
-    def __init__(self, *, label='Start Time'):
-        super().__init__(label=label)
-        self.placeholder = '12:00 PM'
-        self.required = True
-        self.min_length = 4
-        self.max_length = 5
-        self.custom_id = 'Start_Time_Input'
-
-
-class Scheduler(discord.ui.Modal, title='Session Scheduler'):
-    name = NameInput()
-    date = DateInput()
-    start_time = StartTimeInput()
-
-    async def on_submit(self, interaction: discord.Interaction):
-        text_fields = interaction.data['components']
-
-        name = text_fields[0]['components'][0]['value']
-        inputStartTime = text_fields[1]['components'][0]['value'] + " " + text_fields[2]['components'][0]['value']
-
-        startDateTime = parse_date_time(inputStartTime)
-
-        # TODO add voice channel verification
-        vchannel = None
-        for channel in interaction.guild.voice_channels:
-            if channel.name == "General":
-                vchannel = channel
-
-        try:
-            await discord.guild.Guild.create_scheduled_event(interaction.guild,
-                                                             name=name,
-                                                             start_time=startDateTime,
-                                                             channel=vchannel)
-
-            await interaction.response.send_message("Sick nasty brah, I'll get that hammered away for you.",
-                                                    ephemeral=True)
-        except discord.Forbidden:
-            await interaction.response.send_message("Sorry broham, the head honcho said I'm not \"responsible\" "
-                                                    "enough to do that")
 
 
 @client.event
@@ -147,7 +60,7 @@ async def on_message(message):
             await message.channel.send(response)
         elif 'schedule' in lower_message:
 
-            view = MyView()
+            view = ConfirmScheduleView()
             try:
                 await message.channel.send("Did you wanna schedule a new session?", view=view)
             except asyncio.TimeoutError:

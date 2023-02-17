@@ -1,9 +1,5 @@
 import datetime
 import random
-import zoneinfo
-from zoneinfo import ZoneInfo
-import discord
-import re
 
 
 def parse_date_time(start_time):
@@ -12,17 +8,8 @@ def parse_date_time(start_time):
 
     tz = datetime.datetime.now().astimezone().tzinfo
 
-    a = datetime.datetime(year=inputDateTime.year, month=inputDateTime.month, day=inputDateTime.day,
-                          hour=inputDateTime.hour, minute=inputDateTime.minute, tzinfo=tz)
-    return a
-
-
-def test(date):
-    # format_data = "%m/%d/%Y"
-    format_time = "%H:%M"
-
-    date_formatted = datetime.datetime.strptime(date, format_time).time()
-    print(date_formatted)
+    return datetime.datetime(year=inputDateTime.year, month=inputDateTime.month, day=inputDateTime.day,
+                             hour=inputDateTime.hour, minute=inputDateTime.minute, tzinfo=tz)
 
 
 def italicize_string(string):
