@@ -78,11 +78,11 @@ async def roll_d20(ctx):
 
 
 # define the form
-form = {"name": {"question": "What is the name of the event?", "answer": None},
-        "date": {"question": "What date is the event? (YYYY-MM-DD)", "answer": None},
-        "time": {"question": "What time is the event? (24-hour format)", "answer": None},
-        "voice_channel": {"question": "What voice channel will the event take place in?", "answer": None},
-        "role": {"question": "What is the name of the role associated with the event?", "answer": None}}
+form = {"name": {"question": "What are we calling this shindig?", "answer": None},
+        "date": {"question": "What day are we partyin'? (YYYY-MM-DD)", "answer": None},
+        "time": {"question": "I need the time so I  can start pre-gaming. (24-hour format)", "answer": None},
+        "voice_channel": {"question": "Where are we going so I know where to fly into?", "answer": None},
+        "role": {"question": "Who are the absolutely gnarly bros I should remind about this?", "answer": None}}
 
 # define the event reminder message in the style of Killigan
 reminder_message = "What's up dudes and dudettes! Just a friendly reminder that you have an event scheduled for " \
@@ -93,7 +93,7 @@ reminder_message = "What's up dudes and dudettes! Just a friendly reminder that 
 async def schedule_event(ctx):
     # create the form embed and send it to the channel
     embed = discord.Embed(title="Event Scheduling Form",
-                          description="Please fill out the following information to schedule your event:")
+                          description="Jot down these deets and I'll handle everything else:")
     for question in form:
         embed.add_field(name=form[question]["question"], value=form[question]["answer"], inline=False)
     form_message = await ctx.send(embed=embed)
@@ -125,7 +125,8 @@ async def schedule_event(ctx):
     event = await bot.loop.create_task(voice_channel.guild.create_scheduled_event(name=event_name,
                                                                                   start_time=event_time_obj,
                                                                                   channel=voice_channel))
-    await ctx.send(f"Event created with the name {event.name} and the scheduled time {event.start_time}")
+
+    await ctx.send(f"Alright broham, I just popped up an event called \"{event.name}\" at {event.start_time}")
 
     # send event reminders to the associated role
     seconds_in_day = 86400
