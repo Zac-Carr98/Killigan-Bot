@@ -12,7 +12,7 @@ intents.message_content = True
 intents.members = True
 
 # create the bot
-bot = commands.Bot(command_prefix='!', intents=intents)
+bot = commands.Bot(command_prefix='!', intents=intents, help_command=None)
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -148,12 +148,14 @@ async def help_command(ctx):
     if ctx.author == bot.user:
         return
 
-    help_message = f"How's it going, bromigo? This is the one-stop killigan help screen-message-dialogue-thingy." \
-                   f"Kinda let that one get away from me, but here's a list of my commands anyways:"
+    help_message = f"How's it going, bromigo? This is the one-stop killigan help screen-message-dialogue-thingy. " \
+                   f"Kinda let that one get away from me, but here's a list of my commands anyways:\n"
 
     for command, description in command_list.items():
-        help_message += f"{command}: {description}\n"
+        help_message += f"\t{command}:\t{description}\n"
 
     await ctx.channel.send(help_message)
 
 bot.run(DISCORD_TOKEN)
+
+
