@@ -1,5 +1,4 @@
 import datetime
-
 import discord
 import random
 from discord.ext import commands
@@ -17,6 +16,8 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
+
+DISCORD_TOKEN = TOKEN
 
 
 @bot.event
@@ -134,4 +135,25 @@ async def schedule_event(ctx):
         await member.send(reminder_message.format(event_time, voice_channel.name))
 
 
-bot.run(TOKEN)
+# the list of commands currently implemented by killigan bot
+command_list = {"!help": "I'll, like, let you know what all I can do right now.",
+                "!roll": "Let me roll that d20 for you and give it my oen personal spin.",
+                "!schedule-event": "You tell me when, where, and who, and I'll set up an event, and send out a reminder"
+                                   "one day before it happens."
+                }
+
+
+@bot.command(name='help')
+async def help_command(ctx):
+    if ctx.author == bot.user:
+        return
+
+    help_message = f"How's it going, bromigo? This is the one-stop killigan help screen-message-dialogue-thingy." \
+                   f"Kinda let that one get away from me, but here's a list of my commands anyways:"
+
+    for command, description in command_list.items():
+        help_message += f"{command}: {description}\n"
+
+    await ctx.channel.send(help_message)
+
+bot.run(DISCORD_TOKEN)
